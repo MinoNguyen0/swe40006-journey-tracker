@@ -30,7 +30,6 @@ To reset the local database: `docker compose down -v`
 - `src/JourneyTracker.Web/Models` - Journey, Stop, Activity
 - `src/JourneyTracker.Web/Data` - database stuff, seed data and migrations
 - `tests/JourneyTracker.UnitTests` - unit tests
-- `docs/app-structure.drawio` - diagram of how the app works (open in draw.io)
 
 ## For the pipeline / AWS
 
