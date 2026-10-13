@@ -1,7 +1,7 @@
 name: Deploy staging
 on:
   push:
-    branches: [main]
+    branches: [develop]
 
 permissions:
   id-token: write   # required for OIDC
@@ -20,7 +20,7 @@ jobs:
         run: |
           CMD_ID=$(aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --targets "Key=tag:Environment,Values=production" \
+            --targets "Key=tag:Environment,Values=staging" \
             --parameters 'commands=["cd /opt/app && ./deploy.sh"]' \
             --comment "deploy ${{ github.sha }}" \
             --query "Command.CommandId" --output text)
