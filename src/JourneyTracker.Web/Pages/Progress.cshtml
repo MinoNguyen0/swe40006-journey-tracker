@@ -1,0 +1,45 @@
+@page "{id:int}"
+@model ProgressModel
+@{
+    ViewData["Title"] = Model.Journey.Name;
+    var p = Model.Progress;
+}
+
+<h1>@Model.Journey.Name</h1>
+
+<div class="progress mb-3" role="progressbar" aria-valuenow="@p.PercentComplete" aria-valuemin="0" aria-valuemax="100">
+    <div class="progress-bar" style="width: @p.PercentComplete%">@p.PercentComplete%</div>
+</div>
+
+<dl class="row" data-testid="progress-summary">
+    <dt class="col-sm-4">Distance travelled</dt>
+    <dd class="col-sm-8" data-testid="total-distance">@p.TotalDistanceKm.ToString("0.##") of @Model.Journey.TotalDistanceKm.ToString("0") km</dd>
+
+    <dt class="col-sm-4">Last stop passed</dt>
+    <dd class="col-sm-8" data-testid="last-stop">@(p.LastStopPassed?.Name ?? "-")</dd>
+
+    @if (p.IsComplete)
+    {
+        <dt class="col-sm-4">Status</dt>
+        <dd class="col-sm-8" data-testid="journey-complete">Journey complete!</dd>
+    }
+    else
+    {
+        <dt class="col-sm-4">Next stop</dt>
+        <dd class="col-sm-8" data-testid="next-stop">@p.NextStop?.Name &ndash; @p.DistanceToNextStopKm?.ToString("0.##") km to go</dd>
+    }
+</dl>
+
+<h2 class="h5">Stops</h2>
+<ul class="list-group mb-3">
+    @foreach (var stop in Model.Journey.Stops)
+    {
+        var reached = stop.DistanceFromStartKm <= p.TotalDistanceKm;
+        <li class="list-group-item d-flex justify-content-between @(reached ? "list-group-item-success" : "")">
+            <span>@stop.Name</span>
+            <span>@stop.DistanceFromStartKm.ToString("0") km</span>
+        </li>
+    }
+</ul>
+
+<a class="btn btn-primary" asp-page="/Log" asp-route-journeyId="@Model.Journey.Id">Log an activity</a>

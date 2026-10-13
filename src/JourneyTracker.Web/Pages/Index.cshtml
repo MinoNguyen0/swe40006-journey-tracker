@@ -1,0 +1,23 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Choose a journey";
+}
+
+<h1>Choose a journey</h1>
+<p class="text-muted">Log your walks and rides and see how far you'd get along a real route.</p>
+
+<div class="row" data-testid="journey-list">
+    @foreach (var journey in Model.Journeys)
+    {
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">@journey.Name</h5>
+                    <p class="card-text">@journey.TotalDistanceKm.ToString("0") km &middot; @journey.PercentComplete% complete</p>
+                    <a class="btn btn-primary" asp-page="/Progress" asp-route-id="@journey.Id">View progress</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
