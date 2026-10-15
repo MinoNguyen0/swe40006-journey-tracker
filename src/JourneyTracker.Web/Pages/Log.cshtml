@@ -4,9 +4,10 @@
     ViewData["Title"] = "Log an activity";
 }
 
-<h1>Log an activity</h1>
+<form method="post" class="form-card" data-testid="log-form">
+    <h1>Log an activity</h1>
+    <p class="intro">Every km counts towards your journey.</p>
 
-<form method="post" class="col-md-6" data-testid="log-form">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
     <div class="mb-3">
@@ -16,8 +17,13 @@
     </div>
 
     <div class="mb-3">
-        <label asp-for="Input.Type" class="form-label"></label>
-        <select asp-for="Input.Type" asp-items="Html.GetEnumSelectList<ActivityType>()" class="form-select"></select>
+        <span class="form-label d-block mb-2">Type</span>
+        <div class="type-toggle" data-testid="type-toggle">
+            <input type="radio" asp-for="Input.Type" value="@ActivityType.Walk" id="type-walk" />
+            <label for="type-walk">Walk</label>
+            <input type="radio" asp-for="Input.Type" value="@ActivityType.Ride" id="type-ride" />
+            <label for="type-ride">Ride</label>
+        </div>
     </div>
 
     <div class="mb-3">
@@ -26,13 +32,13 @@
         <span asp-validation-for="Input.DistanceKm" class="text-danger"></span>
     </div>
 
-    <div class="mb-3">
+    <div class="mb-4">
         <label asp-for="Input.Date" class="form-label"></label>
         <input asp-for="Input.Date" class="form-control" />
         <span asp-validation-for="Input.Date" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-primary">Save</button>
+    <button type="submit" class="btn-pill">Save activity</button>
 </form>
 
 @section Scripts {
