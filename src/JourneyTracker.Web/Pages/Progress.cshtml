@@ -3,43 +3,66 @@
 @{
     ViewData["Title"] = Model.Journey.Name;
     var p = Model.Progress;
+    var parts = Model.Journey.Name.Split(" to ");
 }
 
-<h1>@Model.Journey.Name</h1>
+<a class="back-link" asp-page="/Index">&larr; All journeys</a>
 
-<div class="progress mb-3" role="progressbar" aria-valuenow="@p.PercentComplete" aria-valuemin="0" aria-valuemax="100">
-    <div class="progress-bar" style="width: @p.PercentComplete%">@p.PercentComplete%</div>
-</div>
-
-<dl class="row" data-testid="progress-summary">
-    <dt class="col-sm-4">Distance travelled</dt>
-    <dd class="col-sm-8" data-testid="total-distance">@p.TotalDistanceKm.ToString("0.##") of @Model.Journey.TotalDistanceKm.ToString("0") km</dd>
-
-    <dt class="col-sm-4">Last stop passed</dt>
-    <dd class="col-sm-8" data-testid="last-stop">@(p.LastStopPassed?.Name ?? "-")</dd>
-
-    @if (p.IsComplete)
+<section class="progress-hero">
+    @if (parts.Length == 2)
     {
-        <dt class="col-sm-4">Status</dt>
-        <dd class="col-sm-8" data-testid="journey-complete">Journey complete!</dd>
+        <div class="from">@parts[0] to</div>
+        <h1>@parts[1]</h1>
     }
     else
     {
-        <dt class="col-sm-4">Next stop</dt>
-        <dd class="col-sm-8" data-testid="next-stop">@p.NextStop?.Name &ndash; @p.DistanceToNextStopKm?.ToString("0.##") km to go</dd>
+        <h1>@Model.Journey.Name</h1>
     }
-</dl>
-
-<h2 class="h5">Stops</h2>
-<ul class="list-group mb-3">
-    @foreach (var stop in Model.Journey.Stops)
+    <div class="big-pct">@p.PercentComplete%</div>
+    <div class="bar" role="progressbar" aria-valuenow="@p.PercentComplete" aria-valuemin="0" aria-valuemax="100">
+        <span style="width: @p.PercentComplete%; background: #f95d51"></span>
+    </div>
+    @if (p.IsComplete)
     {
-        var reached = stop.DistanceFromStartKm <= p.TotalDistanceKm;
-        <li class="list-group-item d-flex justify-content-between @(reached ? "list-group-item-success" : "")">
-            <span>@stop.Name</span>
-            <span>@stop.DistanceFromStartKm.ToString("0") km</span>
-        </li>
+        <div class="complete" data-testid="journey-complete">Journey complete!</div>
     }
-</ul>
+</section>
 
-<a class="btn btn-primary" asp-page="/Log" asp-route-journeyId="@Model.Journey.Id">Log an activity</a>
+<div class="tiles" data-testid="progress-summary">
+    <div class="tile">
+        <div class="label">Distance travelled</div>
+        <div class="value" data-testid="total-distance">@p.TotalDistanceKm.ToString("0.##") of @Model.Journey.TotalDistanceKm.ToString("0") km</div>
+    </div>
+    <div class="tile">
+        <div class="label">Last stop passed</div>
+        <div class="value" data-testid="last-stop">@(p.LastStopPassed?.Name ?? "-")</div>
+    </div>
+    <div class="tile">
+        <div class="label">Next stop</div>
+        @if (p.IsComplete)
+        {
+            <div class="value">You made it</div>
+        }
+        else
+        {
+            <div class="value" data-testid="next-stop">@p.NextStop?.Name &ndash; @p.DistanceToNextStopKm?.ToString("0.##") km to go</div>
+        }
+    </div>
+</div>
+
+<section class="route">
+    <h2>Route</h2>
+    <ul class="stops">
+        @foreach (var stop in Model.Journey.Stops)
+        {
+            var reached = stop.DistanceFromStartKm <= p.TotalDistanceKm;
+            var current = stop == p.LastStopPassed;
+            <li class="@(reached ? "reached" : "") @(current ? "current" : "")">
+                <span>@stop.Name</span>
+                <span>@stop.DistanceFromStartKm.ToString("0") km</span>
+            </li>
+        }
+    </ul>
+</section>
+
+<a class="btn-pill" asp-page="/Log" asp-route-journeyId="@Model.Journey.Id">Log an activity</a>
