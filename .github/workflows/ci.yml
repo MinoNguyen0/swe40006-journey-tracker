@@ -1,0 +1,55 @@
+
+name: Journey Tracker CI
+
+# Run CI when code is pushed or a pull request is opened
+on:
+  push:
+    branches:
+      - develop
+      - main
+      - feature/ci-pipeline
+
+  pull_request:
+    branches:
+      - develop
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build and Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Download repository code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Install .NET 10
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # Step 3: Restore dependencies
+      - name: Restore dependencies
+        run: dotnet restore JourneyTracker.slnx
+
+      # Step 4: Build the solution
+      - name: Build solution
+        run: dotnet build JourneyTracker.slnx --configuration Release --no-restore
+
+      # Step 5: Run existing xUnit tests
+      - name: Run unit tests
+        run: dotnet test tests/JourneyTracker.UnitTests/JourneyTracker.UnitTests.csproj --configuration Release --no-build --no-restore --logger "trx;LogFileName=unit-tests.trx"
+
+      # Step 6: Save test results
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: "**/TestResults/*.trx"
+          if-no-files-found: warn
