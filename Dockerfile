@@ -19,11 +19,18 @@ RUN dotnet publish src/JourneyTracker.Web/JourneyTracker.Web.csproj \
     --no-restore \
     /p:UseAppHost=false
 
+
 # Stage 2: Smaller production runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 
 WORKDIR /app
 
+# Store the source commit SHA in the image
+ARG COMMIT_SHA=unknown
+ENV COMMIT_SHA=${COMMIT_SHA}
+LABEL org.opencontainers.image.revision="${COMMIT_SHA}"
+
+# Configure application port
 ENV ASPNETCORE_HTTP_PORTS=8080
 EXPOSE 8080
 
