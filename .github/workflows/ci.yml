@@ -58,7 +58,7 @@ jobs:
   # Publish a Docker image only after the tests pass
   publish-image:
     name: Build and Publish Docker Image
-    needs: build-and-test
+    needs: [build-and-test, integration-tests]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
@@ -101,3 +101,47 @@ jobs:
             COMMIT_SHA=${{ github.sha }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
+
+  integration-tests:
+    name: MySQL Integration Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: journeytracker_test
+          MYSQL_USER: journey_test
+          MYSQL_PASSWORD: journey_test_pw
+          MYSQL_ROOT_PASSWORD: root_test_pw
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -proot_test_pw --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+          --health-start-period=30s
+
+    env:
+      JOURNEYTRACKER_TEST_CONNECTION: "Server=127.0.0.1;Port=3306;Database=journeytracker_test;User=journey_test;Password=journey_test_pw;"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Run MySQL integration tests
+        run: dotnet test tests/JourneyTracker.IntegrationTests/JourneyTracker.IntegrationTests.csproj --configuration Release --logger "trx;LogFileName=integration-tests.trx"
+
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: tests/JourneyTracker.IntegrationTests/TestResults/*.trx
+          if-no-files-found: warn
