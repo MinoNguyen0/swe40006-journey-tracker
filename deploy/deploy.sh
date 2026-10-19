@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-ENVIRONMENT=${1:?usage: deploy.sh <Staging|Production> <image> <sha>}
+ENVIRONMENT=${1:?usage: deploy.sh <staging|production> <image> <sha>}
 IMAGE=${2:?missing image}
 SHA=${3:?missing commit sha}
 
@@ -11,8 +11,8 @@ GHCR_USER=nhydnv
 ENV_LC=${ENVIRONMENT,,}
 
 case "$ENVIRONMENT" in
-  Staging|Production) ;;
-  *) echo "ENVIRONMENT must be Staging or Production"; exit 1 ;;
+  staging|production) ;;
+  *) echo "ENVIRONMENT must be staging or production"; exit 1 ;;
 esac
 
 # Refuse to deploy anything that isn't pinned to the commit SHA (e.g. :latest)

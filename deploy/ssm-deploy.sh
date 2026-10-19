@@ -1,9 +1,9 @@
 #!/bin/bash
 # Runs on the GitHub runner``. Sends deploy/deploy.sh to an EC2 instance via SSM.
-# usage: ssm-deploy.sh <Staging|Production> <image> <sha> <instance-id>
+# usage: ssm-deploy.sh <staging|production> <image> <sha> <instance-id>
 set -euo pipefail
 
-ENVIRONMENT=${1:?usage: ssm-deploy.sh <Staging|Production> <image> <sha> <instance-id>}
+ENVIRONMENT=${1:?usage: ssm-deploy.sh <staging|production> <image> <sha> <instance-id>}
 IMAGE=${2:?missing image}
 SHA=${3:?missing commit sha}
 INSTANCE_ID=${4:?missing instance id}
@@ -13,7 +13,7 @@ TIMEOUT=900   # seconds to wait for the deploy to finish
 SCRIPT="$(dirname "$0")/deploy.sh"
 
 # These values end up inside a shell command on the instance, so keep them boring
-[[ "$ENVIRONMENT" =~ ^(Staging|Production)$ ]] || { echo "Environment must be Staging or Production"; exit 1; }
+[[ "$ENVIRONMENT" =~ ^(staging|production)$ ]] || { echo "Environment must be staging or production"; exit 1; }
 [[ "$IMAGE" =~ ^[A-Za-z0-9._/:@-]+$ ]]          || { echo "Unexpected characters in image: $IMAGE"; exit 1; }
 [[ "$SHA" =~ ^[0-9a-f]{7,40}$ ]]                || { echo "Unexpected commit sha: $SHA"; exit 1; }
 [[ "$INSTANCE_ID" =~ ^i-[0-9a-f]+$ ]]           || { echo "Unexpected instance id: $INSTANCE_ID"; exit 1; }
