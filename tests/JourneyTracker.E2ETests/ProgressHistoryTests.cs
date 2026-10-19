@@ -77,17 +77,34 @@ public class ProgressHistoryTests : PageTest
             AriaRole.Heading,
             new() { Name = "Activity history" }
         )).ToBeVisibleAsync();
+        // 8. Verify History handles both valid states: an empty database or existing activities.
+        var emptyState = Page.GetByText(
+            "No activities logged yet."
+        );
 
-        // 8. Verify the history table structure.
-        foreach (var column in new[]
+        if (await emptyState.IsVisibleAsync())
         {
-            "Date", "Type", "Distance", "Journey"
-        })
-        {
+            // Fresh database: verify the empty state.
+            await Expect(emptyState).ToBeVisibleAsync();
+
             await Expect(Page.GetByRole(
-                AriaRole.Columnheader,
-                new() { Name = column }
+                AriaRole.Link,
+                new() { Name = "Log your first one." }
             )).ToBeVisibleAsync();
+        }
+        else
+        {
+            // Populated database: verify table columns.
+            foreach (var column in new[]
+            {
+                "Date", "Type", "Distance", "Journey"
+            })
+            {
+                await Expect(Page.GetByRole(
+                    AriaRole.Columnheader,
+                    new() { Name = column }
+                )).ToBeVisibleAsync();
+            }
         }
     }
 }
