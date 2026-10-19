@@ -58,7 +58,7 @@ jobs:
   # Publish a Docker image only after the tests pass
   publish-image:
     name: Build and Publish Docker Image
-    needs: [build-and-test, integration-tests]
+    needs: [build-and-test, integration-tests, e2e-tests]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
@@ -145,3 +145,78 @@ jobs:
           name: integration-test-results
           path: tests/JourneyTracker.IntegrationTests/TestResults/*.trx
           if-no-files-found: warn
+  # Playwright browser tests using an isolated MySQL database
+  e2e-tests:
+    name: Playwright E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # Step 1: Download repository code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Install .NET 10
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # Step 3: Build the E2E test project
+      - name: Build Playwright tests
+        run: dotnet build tests/JourneyTracker.E2ETests/JourneyTracker.E2ETests.csproj --configuration Release
+
+      # Step 4: Install Chromium browser and dependencies
+      - name: Install Playwright Chromium
+        run: pwsh tests/JourneyTracker.E2ETests/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+      # Step 5: Start isolated application and MySQL
+      - name: Start E2E Docker environment
+        run: |
+          docker compose -p journeytracker-e2e \
+            -f docker-compose.e2e.yml \
+            up -d --build --wait --wait-timeout 180
+
+      # Step 6: Verify application health
+      - name: Verify application health
+        run: |
+          curl --fail --retry 10 --retry-delay 2 \
+            --retry-connrefused \
+            http://127.0.0.1:18080/health
+
+      # Step 7: Execute all three Playwright tests
+      - name: Run Playwright E2E tests
+        env:
+          JOURNEYTRACKER_BASE_URL: http://127.0.0.1:18080
+        run: |
+          dotnet test tests/JourneyTracker.E2ETests/JourneyTracker.E2ETests.csproj \
+            --configuration Release \
+            --no-build \
+            --logger "trx;LogFileName=e2e-tests.trx"
+
+      # Step 8: Preserve Docker logs for troubleshooting
+      - name: Capture E2E Docker logs
+        if: always()
+        run: |
+          docker compose -p journeytracker-e2e \
+            -f docker-compose.e2e.yml \
+            logs --no-color > e2e-compose.log || true
+
+      # Step 9: Upload test results and logs
+      - name: Upload Playwright test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-e2e-results
+          path: |
+            tests/JourneyTracker.E2ETests/TestResults/*.trx
+            e2e-compose.log
+          if-no-files-found: warn
+
+      # Step 10: Remove temporary test containers and data
+      - name: Clean up E2E environment
+        if: always()
+        run: |
+          docker compose -p journeytracker-e2e \
+            -f docker-compose.e2e.yml \
+            down -v --remove-orphans

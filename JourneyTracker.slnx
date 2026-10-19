@@ -3,6 +3,7 @@
     <Project Path="src/JourneyTracker.Web/JourneyTracker.Web.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/JourneyTracker.E2ETests/JourneyTracker.E2ETests.csproj" />
     <Project Path="tests/JourneyTracker.IntegrationTests/JourneyTracker.IntegrationTests.csproj" />
     <Project Path="tests/JourneyTracker.UnitTests/JourneyTracker.UnitTests.csproj" />
   </Folder>
