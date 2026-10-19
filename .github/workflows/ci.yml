@@ -45,7 +45,7 @@ jobs:
       - name: Run unit tests
         run: dotnet test tests/JourneyTracker.UnitTests/JourneyTracker.UnitTests.csproj --configuration Release --no-build --no-restore --logger "trx;LogFileName=unit-tests.trx"
 
-      # Step 6: Save test results
+      # Step 6: Save unit test results
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -53,7 +53,6 @@ jobs:
           name: unit-test-results
           path: "**/TestResults/*.trx"
           if-no-files-found: warn
-
 
   # Publish a Docker image only after the tests pass
   publish-image:
@@ -177,12 +176,38 @@ jobs:
             -f docker-compose.e2e.yml \
             up -d --build --wait --wait-timeout 180
 
-      # Step 6: Verify application health
+      # Step 6: Wait for application readiness
       - name: Verify application health
         run: |
-          curl --fail --retry 10 --retry-delay 2 \
-            --retry-connrefused \
-            http://127.0.0.1:18080/health
+          echo "Checking E2E container status..."
+          docker compose -p journeytracker-e2e \
+            -f docker-compose.e2e.yml ps -a
+
+          echo "Waiting for Journey Tracker..."
+
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error \
+              --max-time 5 \
+              http://127.0.0.1:18080/health; then
+              echo ""
+              echo "Application health check passed!"
+              exit 0
+            fi
+
+            echo "Application not ready ($attempt/30)"
+            sleep 3
+          done
+
+          echo "Application health check failed."
+
+          docker compose -p journeytracker-e2e \
+            -f docker-compose.e2e.yml ps -a
+
+          docker compose -p journeytracker-e2e \
+            -f docker-compose.e2e.yml \
+            logs --no-color --tail=100 app-e2e
+
+          exit 1
 
       # Step 7: Execute all three Playwright tests
       - name: Run Playwright E2E tests
@@ -194,13 +219,17 @@ jobs:
             --no-build \
             --logger "trx;LogFileName=e2e-tests.trx"
 
-      # Step 8: Preserve Docker logs for troubleshooting
+      # Step 8: Save Docker diagnostics
       - name: Capture E2E Docker logs
         if: always()
         run: |
           docker compose -p journeytracker-e2e \
             -f docker-compose.e2e.yml \
-            logs --no-color > e2e-compose.log || true
+            ps -a > e2e-containers.txt
+
+          docker compose -p journeytracker-e2e \
+            -f docker-compose.e2e.yml \
+            logs --no-color --timestamps > e2e-compose.log
 
       # Step 9: Upload test results and logs
       - name: Upload Playwright test results
