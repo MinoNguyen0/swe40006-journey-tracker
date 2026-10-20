@@ -1,4 +1,8 @@
 @inject JourneyTracker.Web.AppInfo AppInfo
+@{
+    var currentPage = ViewContext.RouteData.Values["page"] as string;
+    string Active(string page) => currentPage == page ? "active" : "";
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,42 +12,29 @@
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/JourneyTracker.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">Journey Tracker</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Journeys</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Log">Log activity</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/History">History</a>
-                        </li>
-                    </ul>
-                </div>
+    <header class="nav-wrap">
+        <nav class="site-nav">
+            <a class="brand" asp-page="/Index">
+                <span class="brand-dot"></span>
+                <span>Journey Tracker</span>
+            </a>
+            <div class="nav-links">
+                <a class="@Active("/Index")" asp-page="/Index">Journeys</a>
+                <a class="@Active("/History")" asp-page="/History">History</a>
             </div>
+            <a class="btn-pill btn-pill-sm" asp-page="/Log">Log activity</a>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
+    <main role="main" class="container page">
+        @RenderBody()
+    </main>
+
+    <footer class="site-footer">
         <div class="container">
-            &copy; 2026 - Journey Tracker &middot; Version <span data-testid="commit-sha" title="@AppInfo.CommitSha">@AppInfo.ShortSha</span>
+            Journey Tracker &middot; SWE40006 Group 5 &middot; Version <span data-testid="commit-sha" title="@AppInfo.CommitSha">@AppInfo.ShortSha</span>
         </div>
     </footer>
 

@@ -4,20 +4,77 @@
     ViewData["Title"] = "Choose a journey";
 }
 
-<h1>Choose a journey</h1>
-<p class="text-muted">Log your walks and rides and see how far you'd get along a real route.</p>
-
-<div class="row" data-testid="journey-list">
-    @foreach (var journey in Model.Journeys)
-    {
-        <div class="col-md-4 mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">@journey.Name</h5>
-                    <p class="card-text">@journey.TotalDistanceKm.ToString("0") km &middot; @journey.PercentComplete% complete</p>
-                    <a class="btn btn-primary" asp-page="/Progress" asp-route-id="@journey.Id">View progress</a>
-                </div>
+<section class="hero">
+    <div>
+        <h1>Walk the world <span class="accent">from your street.</span></h1>
+        <p>Log your walks and rides and watch them add up along a real route, from Hanoi to Ho Chi Minh City or Tokyo to Osaka.</p>
+        <div class="hero-actions">
+            <a class="btn-pill" href="#journeys">Choose a journey</a>
+            <a class="btn-pill btn-pill-light" asp-page="/Log">Log an activity</a>
+        </div>
+        <div class="stat-row">
+            <div>
+                <div class="num">@Model.TotalLoggedKm.ToString("0.#") km</div>
+                <div class="label">logged so far</div>
+            </div>
+            <div>
+                <div class="num">@Model.ActivityCount</div>
+                <div class="label">activities</div>
+            </div>
+            <div>
+                <div class="num">@Model.Journeys.Count</div>
+                <div class="label">routes</div>
             </div>
         </div>
-    }
-</div>
+    </div>
+
+    <div class="hero-art" aria-hidden="true">
+        <svg viewBox="0 0 400 300" fill="none">
+            <path d="M40 250 C 110 250, 90 160, 170 160 S 250 70, 330 60" stroke="#dcdcdc" stroke-width="6" stroke-linecap="round" stroke-dasharray="2 14" />
+            <path d="M40 250 C 110 250, 90 160, 170 160" stroke="#151515" stroke-width="6" stroke-linecap="round" />
+            <circle cx="40" cy="250" r="10" fill="#151515" />
+            <circle cx="170" cy="160" r="24" fill="#f95d51" opacity="0.18" />
+            <circle cx="170" cy="160" r="13" fill="#f95d51" />
+            <circle cx="330" cy="60" r="10" fill="#fff" stroke="#151515" stroke-width="4" />
+            <rect x="58" y="262" width="76" height="26" rx="13" fill="#fff" />
+            <text x="96" y="279" text-anchor="middle" font-size="12" fill="#151515" font-family="Segoe UI, sans-serif">Start</text>
+            <rect x="192" y="176" width="96" height="26" rx="13" fill="#fff" />
+            <text x="240" y="193" text-anchor="middle" font-size="12" fill="#151515" font-family="Segoe UI, sans-serif">You are here</text>
+            <rect x="262" y="20" width="96" height="26" rx="13" fill="#151515" />
+            <text x="310" y="37" text-anchor="middle" font-size="12" fill="#fff" font-family="Segoe UI, sans-serif">Destination</text>
+        </svg>
+    </div>
+</section>
+
+<section id="journeys">
+    <div class="section-head">
+        <h2>Choose a journey</h2>
+        <p>Distances are approximate road distances.</p>
+    </div>
+
+    <div class="journey-grid" data-testid="journey-list">
+        @for (var i = 0; i < Model.Journeys.Count; i++)
+        {
+            var journey = Model.Journeys[i];
+            var parts = journey.Name.Split(" to ");
+            <div class="card journey-card accent-@(i % 3)">
+                <span class="tag">@journey.TotalDistanceKm.ToString("0") km</span>
+                @if (parts.Length == 2)
+                {
+                    <span class="from">@parts[0] to</span>
+                    <span class="to">@parts[1]</span>
+                }
+                else
+                {
+                    <span class="to">@journey.Name</span>
+                }
+                <div class="bar"><span style="width: @journey.PercentComplete%"></span></div>
+                <div class="card-foot">
+                    <span>@journey.PercentComplete% &middot; @journey.TravelledKm.ToString("0.#") km done</span>
+                    @* whole card is clickable through this link (see .view-link in site.css) *@
+                    <a class="view-link" asp-page="/Progress" asp-route-id="@journey.Id">View progress <span class="arrow">&rarr;</span></a>
+                </div>
+            </div>
+        }
+    </div>
+</section>
