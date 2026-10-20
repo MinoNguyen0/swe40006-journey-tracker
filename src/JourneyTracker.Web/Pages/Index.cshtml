@@ -48,7 +48,7 @@
 
 <section id="journeys">
     <div class="section-head">
-        <h2>Pick your route</h2>
+        <h2>Choose a journey</h2>
         <p>Distances are approximate road distances.</p>
     </div>
 
@@ -57,7 +57,7 @@
         {
             var journey = Model.Journeys[i];
             var parts = journey.Name.Split(" to ");
-            <a class="journey-card accent-@(i % 3)" asp-page="/Progress" asp-route-id="@journey.Id">
+            <div class="card journey-card accent-@(i % 3)">
                 <span class="tag">@journey.TotalDistanceKm.ToString("0") km</span>
                 @if (parts.Length == 2)
                 {
@@ -71,9 +71,10 @@
                 <div class="bar"><span style="width: @journey.PercentComplete%"></span></div>
                 <div class="card-foot">
                     <span>@journey.PercentComplete% &middot; @journey.TravelledKm.ToString("0.#") km done</span>
-                    <span class="arrow">&rarr;</span>
+                    @* whole card is clickable through this link (see .view-link in site.css) *@
+                    <a class="view-link" asp-page="/Progress" asp-route-id="@journey.Id">View progress <span class="arrow">&rarr;</span></a>
                 </div>
-            </a>
+            </div>
         }
     </div>
 </section>

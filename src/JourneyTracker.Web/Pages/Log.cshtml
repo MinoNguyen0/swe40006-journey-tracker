@@ -17,13 +17,8 @@
     </div>
 
     <div class="mb-3">
-        <span class="form-label d-block mb-2">Type</span>
-        <div class="type-toggle" data-testid="type-toggle">
-            <input type="radio" asp-for="Input.Type" value="@ActivityType.Walk" id="type-walk" />
-            <label for="type-walk">Walk</label>
-            <input type="radio" asp-for="Input.Type" value="@ActivityType.Ride" id="type-ride" />
-            <label for="type-ride">Ride</label>
-        </div>
+        <label asp-for="Input.Type" class="form-label"></label>
+        <select asp-for="Input.Type" asp-items="Html.GetEnumSelectList<ActivityType>()" class="form-select"></select>
     </div>
 
     <div class="mb-3">

@@ -98,7 +98,8 @@ a { color: inherit; }
   background: var(--soft);
   border-radius: var(--radius-lg);
   padding: 28px;
-  text-decoration: none;
+  border: 0;
+  position: relative;
   transition: transform .2s ease, box-shadow .2s ease;
 }
 .journey-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08); }
@@ -108,6 +109,8 @@ a { color: inherit; }
 .journey-card .from { color: var(--muted); }
 .journey-card .to { font-size: 1.8rem; font-weight: 500; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 24px; }
 .journey-card .card-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; color: var(--muted); font-size: .9rem; }
+.journey-card .view-link { display: flex; align-items: center; gap: 10px; color: var(--ink); font-weight: 500; text-decoration: none; }
+.journey-card .view-link::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
 .journey-card .arrow { width: 40px; height: 40px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; }
 
 .accent-0 { --accent: var(--coral); }
@@ -123,7 +126,7 @@ a { color: inherit; }
 .back-link:hover { color: var(--ink); }
 
 .progress-hero { background: var(--ink); color: #fff; border-radius: var(--radius-lg); padding: 40px; margin-bottom: 20px; }
-.progress-hero .from { color: #a9a9a9; }
+.progress-hero h1 .from { display: block; font-size: 1rem; font-weight: 400; letter-spacing: 0; color: #a9a9a9; margin-bottom: 4px; }
 .progress-hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); margin-bottom: 32px; }
 .progress-hero .big-pct { font-size: clamp(3.5rem, 10vw, 6rem); font-weight: 500; letter-spacing: -0.05em; line-height: 1; }
 .progress-hero .bar { background: #333; margin-top: 20px; height: 14px; }
@@ -156,20 +159,18 @@ a { color: inherit; }
 .form-control, .form-select { border: 0; border-radius: var(--radius-md); padding: 14px 18px; background-color: #fff; }
 .form-control:focus, .form-select:focus { box-shadow: 0 0 0 3px rgba(21, 21, 21, .15); }
 
-.type-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #fff; padding: 6px; border-radius: 500px; }
-.type-toggle input { position: absolute; opacity: 0; pointer-events: none; }
-.type-toggle label { text-align: center; padding: 10px; border-radius: 500px; cursor: pointer; color: var(--muted); font-weight: 500; margin: 0; }
-.type-toggle input:checked + label { background: var(--ink); color: #fff; }
-.type-toggle input:focus-visible + label { outline: 2px solid var(--coral); }
 
 .text-danger { color: #c23a2f !important; font-size: .9rem; }
 
 /* history */
-.activity-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
-.activity-row { display: grid; grid-template-columns: 110px 1fr auto; align-items: center; gap: 16px; background: var(--soft); border-radius: var(--radius-md); padding: 16px 22px; }
-.activity-row .date { color: var(--muted); font-size: .9rem; }
-.activity-row .journey { font-weight: 500; }
-.activity-row .km { font-size: 1.2rem; font-weight: 500; letter-spacing: -0.02em; display: flex; align-items: center; gap: 12px; }
+.activity-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+.activity-table th { color: var(--muted); font-weight: 500; font-size: .85rem; padding: 0 22px; text-align: left; }
+.activity-table td { background: var(--soft); padding: 16px 22px; vertical-align: middle; }
+.activity-table td:first-child { border-radius: var(--radius-md) 0 0 var(--radius-md); }
+.activity-table td:last-child { border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+.activity-table .date { color: var(--muted); font-size: .9rem; white-space: nowrap; }
+.activity-table .journey { font-weight: 500; }
+.activity-table .km { font-size: 1.2rem; font-weight: 500; letter-spacing: -0.02em; white-space: nowrap; }
 .badge-type { padding: 4px 12px; border-radius: 500px; font-size: .8rem; font-weight: 500; letter-spacing: 0; }
 .badge-walk { background: rgba(98, 197, 132, .2); color: #2f7d4a; }
 .badge-ride { background: rgba(249, 93, 81, .15); color: #c23a2f; }
@@ -186,8 +187,7 @@ a { color: inherit; }
   .tiles { grid-template-columns: 1fr; }
   .progress-hero { padding: 28px; }
   .form-card { padding: 24px; }
-  .activity-row { grid-template-columns: 1fr auto; }
-  .activity-row .date { grid-column: 1 / -1; }
+  .activity-table th, .activity-table td { padding-left: 12px; padding-right: 12px; }
   .site-nav { padding-left: 14px; }
   .brand span:last-child { display: none; }
   .nav-links a { padding: 8px 12px; }
