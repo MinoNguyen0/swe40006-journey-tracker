@@ -1,0 +1,47 @@
+
+# Isolated environment for Playwright E2E tests.
+# Do not use this configuration for production.
+
+services:
+  db-e2e:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: journeytracker_e2e
+      MYSQL_USER: journey_e2e
+      MYSQL_PASSWORD: journey_e2e_pw
+      MYSQL_ROOT_PASSWORD: root_e2e_pw
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'mysqladmin ping -h 127.0.0.1 -u root -p"$$MYSQL_ROOT_PASSWORD" --silent'
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+    volumes:
+      - e2e-db-data:/var/lib/mysql
+
+  app-e2e:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    image: journeytracker:e2e-local
+
+    depends_on:
+      db-e2e:
+        condition: service_healthy
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__Default: "Server=db-e2e;Port=3306;Database=journeytracker_e2e;User=journey_e2e;Password=journey_e2e_pw;"
+      COMMIT_SHA: e2e-local
+
+    ports:
+      - "127.0.0.1:18080:8080"
+
+volumes:
+  e2e-db-data:
