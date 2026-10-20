@@ -61,6 +61,9 @@ jobs:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
+    outputs:
+      image: ${{ steps.image.outputs.name }}:${{ github.sha }}
+
     permissions:
       contents: read
       packages: write
@@ -249,3 +252,49 @@ jobs:
           docker compose -p journeytracker-e2e \
             -f docker-compose.e2e.yml \
             down -v --remove-orphans
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: publish-image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    environment: staging
+    concurrency: deploy-staging
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ap-southeast-2
+
+      - name: Deploy via SSM
+        run: ./deploy/ssm-deploy.sh staging "${{ needs.publish-image.outputs.image }}" "${{ github.sha }}" "${{ vars.INSTANCE_ID }}"
+
+  deploy-production:
+    name: Deploy to Production
+    needs: publish-image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency: deploy-production
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ap-southeast-2
+
+      - name: Deploy via SSM
+        run: ./deploy/ssm-deploy.sh production "${{ needs.publish-image.outputs.image }}" "${{ github.sha }}" "${{ vars.INSTANCE_ID }}"
