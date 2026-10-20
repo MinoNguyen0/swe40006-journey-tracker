@@ -67,8 +67,14 @@ public class ActivityLoggingTests : PageTest
             new() { Name = "History" }
         ).ClickAsync();
 
-        // 6. Confirm the entered distance appears.
-        await Expect(Page.Locator("body"))
-            .ToContainTextAsync(distanceKm);
+        // 6. Confirm the saved distance appears in history.
+        // The UI removes trailing zeros (e.g. 45.60 becomes 45.6).
+        var expectedDistance = decimal.Parse(
+            distanceKm,
+            CultureInfo.InvariantCulture
+        ).ToString("0.##", CultureInfo.InvariantCulture);
+
+        await Expect(Page.GetByTestId("history-table"))
+            .ToContainTextAsync($"{expectedDistance} km");
     }
 }
