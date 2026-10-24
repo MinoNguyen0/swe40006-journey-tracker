@@ -253,10 +253,11 @@ jobs:
             -f docker-compose.e2e.yml \
             down -v --remove-orphans
 
+  # One push to main runs the whole release: tests > image > staging > approval > production
   deploy-staging:
     name: Deploy to Staging
     needs: publish-image
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: staging
     concurrency: deploy-staging
@@ -276,9 +277,11 @@ jobs:
       - name: Deploy via SSM
         run: ./deploy/ssm-deploy.sh staging "${{ needs.publish-image.outputs.image }}" "${{ github.sha }}" "${{ vars.INSTANCE_ID }}"
 
+  # Waits for staging to pass, then for manual approval (production environment).
+  # Deploys the same image that was just tested on staging.
   deploy-production:
     name: Deploy to Production
-    needs: publish-image
+    needs: [publish-image, deploy-staging]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: production
